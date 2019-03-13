@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.bike_rental.Model.Bike;
 import com.example.bike_rental.databinding.FragmentMainBinding;
 import com.example.bike_rental.databinding.ListItemBikeBinding;
 
@@ -20,12 +19,18 @@ import java.util.List;
 
 public class MainFragment extends Fragment {
 
-    private List<Bike> bikes = new ArrayList<>();
+    /**
+     * @availableBikes - bikes available at a particualr location
+     * @fragmentMainBinding - binding for this fragment
+     *
+     */
+    private List<Bike> availableBikes = new ArrayList<>();
     private FragmentMainBinding fragmentMainBinding;
+
+    // Static method to create a new instance of this fragment used by activity which contains this fragment
     public static MainFragment getInstance(){
         return new MainFragment();
     }
-
 
 
     @Nullable
@@ -37,6 +42,7 @@ public class MainFragment extends Fragment {
                 container,
                 false
         );
+        // get a reference to binding
         this.fragmentMainBinding = binding;
         return binding.getRoot();
     }
@@ -46,17 +52,31 @@ public class MainFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        for (int i = 0; i < 10; i++) {
-            bikes.add(new Bike("Bike no: "+i));
-        }
 
+        //TODO get bike data from server
+        availableBikes.add(new Bike("Hero Honda","Splendor Plus","Avg Of 20kms/l","12/hr",""));
+        availableBikes.add(new Bike("Hero Honda","Splendor","Avg Of 20kms/l","12/hr",""));
+        availableBikes.add(new Bike("Honda","CBZ","Avg Of 20kms/l","12/hr",""));
+        availableBikes.add(new Bike("Hero","Activa 5g","Avg Of 20kms/l","12/hr",""));
+        availableBikes.add(new Bike("Hero","Activa 125","Avg Of 20kms/l","12/hr",""));
+        availableBikes.add(new Bike("Honda","trigger","Avg Of 20kms/l","12/hr",""));
+        availableBikes.add(new Bike("Honda","Plus","Avg Of 20kms/l","12/hr",""));
+
+
+        //set adapter and layoutmanager to recyclerview
         fragmentMainBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
         fragmentMainBinding.recyclerviewFragmentMain.setLayoutManager(new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false));
     }
 
     class BikeAdapter extends RecyclerView.Adapter<BikeAdapter.BikeHolder>{
 
+        private static final String TAG = "BikeAdapter";
 
+
+
+        public BikeAdapter() {
+
+        }
 
         @NonNull
         @Override
@@ -72,23 +92,39 @@ public class MainFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull BikeHolder bikeHolder, int i) {
-            bikeHolder.bindView(bikes.get(i));
+            bikeHolder.bindView(availableBikes.get(i));
         }
 
         @Override
         public int getItemCount() {
-            return bikes == null ? 0 : bikes.size();
+            return availableBikes == null ? 0 : availableBikes.size();
         }
 
+
+
         class BikeHolder extends RecyclerView.ViewHolder{
+            // Binding of the List Item used by recycler view
             ListItemBikeBinding bikeBinding;
 
             public BikeHolder(ListItemBikeBinding bikeBinding){
                 super(bikeBinding.getRoot());
                 this.bikeBinding = bikeBinding;
+                //TODO impelement selection logic and highlight the selected accordingly
+                bikeBinding.parentLayoutListItemBike.setOnClickListener(e->{
+                    bikeBinding.parentLayoutListItemBike.setBackground(
+                            getActivity().getDrawable(R.drawable.forground_selection_style)
+                    );
+                });
             }
-            public void bindView(Bike b){
 
+            /**
+             *
+             * @param b - bike object that should be binded to the recycler view
+             */
+
+            public void bindView(Bike b){
+                bikeBinding.setBike(b);
+                bikeBinding.executePendingBindings();
             }
         }
     }

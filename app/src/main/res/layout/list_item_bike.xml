@@ -3,11 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
+        <variable
+            name="bike"
+            type="com.example.bike_rental.Bike"/>
     </data>
 
 
       <LinearLayout
+          android:id="@+id/parent_layout_list_item_bike"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:minWidth="180dp"
@@ -15,7 +18,6 @@
           android:orientation="vertical"
           android:padding="8dp"
           android:layout_margin="2dp"
-
           >
 
           <ImageView
@@ -28,7 +30,7 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:maxWidth="150dp"
-              android:text="Hero Honda Splendor Plus "
+              android:text="@{bike.modelNumber}"
               android:textColor="@android:color/white"
               android:textAppearance="@style/TextAppearance.AppCompat.Headline"
               android:gravity="center"

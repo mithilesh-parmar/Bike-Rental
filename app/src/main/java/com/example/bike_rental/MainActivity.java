@@ -20,6 +20,7 @@ import com.example.bike_rental.databinding.ActivitySingleFragmentBinding;
 public class MainActivity extends SingleFragmentActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
+    //TODO remove the drawer layout and include bottom navigation bar
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
@@ -59,25 +60,9 @@ public class MainActivity extends SingleFragmentActivity implements NavigationVi
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-
-        //TODO set the selected menuitem checked i.e highlighted
-
-    if (drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.closeDrawers();
-
-        switch (menuItem.getItemId()){
-            case R.id.profile_drawer_menu:
-
-                return  true;
-            case R.id.setting_drawer_menu:
-
-                return  true;
-            case R.id.log_out_drawer_menu:
-
-                return  true;
-        }
-
         return false;
     }
 }
