@@ -6,7 +6,7 @@
 
     <item android:state_focused="true" android:color="@android:color/white"/>
 
-    <item android:color="@color/colorPrimary"/>
+    <item android:color="@android:color/black"/>
 
 
 </selector>
