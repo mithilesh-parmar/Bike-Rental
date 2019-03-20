@@ -3,17 +3,18 @@ package com.example.bike_rental;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -30,16 +31,23 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.bike_rental.homescreen.HomeFragment;
+import com.example.bike_rental.models.User;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 
+//TODO on configuration changes location permission is showed again from start
 public class MainActivity extends SingleFragmentActivity implements
-        NavigationView.OnNavigationItemSelectedListener , View.OnClickListener {
+        NavigationView.OnNavigationItemSelectedListener , View.OnClickListener, MainActivityViewModel.Callback {
 
     private static final String TAG = "MainActivity";
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Button rentalToolbarButton,ridesTooblarButton;
     private static final int REQUEST_LOCATION_PERMISSION_CODE = 2316;
+    private static final int SETTINGS_PERMISSION_CODE = 216;
     private MainActivityViewModel viewModel;
 
 
@@ -54,13 +62,13 @@ public class MainActivity extends SingleFragmentActivity implements
         // get the viewmodel for main activity
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
+        //set a callback for viewmodel
+        viewModel.setCallback(this);
+
         // observe for changes in location
-        viewModel.getLastKnownLocation().observe(this, new Observer<Location>() {
-            @Override
-            public void onChanged(@Nullable Location location) {
-                Log.d(TAG, "onChanged: new location received "+location);
-                Toast.makeText(MainActivity.this, "Location "+location, Toast.LENGTH_SHORT).show();
-            }
+        viewModel.getLastKnownLocation().observe(this, location -> {
+            Log.d(TAG, "onChanged: new location received "+location);
+            User.getInstance().setLocation(location);
         });
 
 
@@ -85,21 +93,13 @@ public class MainActivity extends SingleFragmentActivity implements
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // start location tracking
-        startTrackingLocation();
-    }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // if the permissions dialog is not visible then check if the permissions from setting were granted
-        if (!isPermissionDialogVisible() && !checkPermissionFor(Manifest.permission.ACCESS_FINE_LOCATION)){
-            Log.d(TAG, "onResume: permissions not granted");
-            showPermissionDialog(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
+        //TODO stop this when device configuration changes
+        getDeviceLocation();
 
     }
+
+
 
     /**
      * used to get the fragment that should be inflated in this activity
@@ -156,24 +156,46 @@ public class MainActivity extends SingleFragmentActivity implements
 
 
     /**
+     * TODO imnplementations required in this method
      * called after the user chooses the response for permission
      * @param requestCode
      * @param permissions
      * @param grantResults
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
             case REQUEST_LOCATION_PERMISSION_CODE :
                 // if permission is granted then get the location else show a alert
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    // permission granted
                     Log.d(TAG, "onRequestPermissionsResult: starting Location tracking");
-                    startTrackingLocation();
+                    getDeviceLocation();
                 }else {
+                    // user rejected the permission
                     Log.d(TAG, "onRequestPermissionsResult: Location Permission Denied, Showing alert ");
-                    showAlert();
+
+                    // TODO implement this ( set the text to require location permission and get the permission when user click on it check for rationale )
+
+//                    boolean showRationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
+//
+//                    if (! showRationale){
+//                        // user checked never show again box
+//                        // start settings activity
+//                        showAlert();
+//
+//                    }else if (showRationale){
+//                        // user did not check "never ask again"
+//                        // show alert why you need permission
+//                        Toast.makeText(this, "We Need location Permission", Toast.LENGTH_SHORT).show();
+//                        showPermissionDialog(Manifest.permission.ACCESS_FINE_LOCATION);
+//                    }
+
+
                 }
                 break;
+
         }
     }
 
@@ -183,17 +205,17 @@ public class MainActivity extends SingleFragmentActivity implements
      * if granted then request device location from viewmodel
      */
     @SuppressLint("MissingPermission")
-    private void startTrackingLocation() {
-        Log.d(TAG, "startTrackingLocation: ");
+    private void getDeviceLocation() {
+        Log.d(TAG, "getDeviceLocation: ");
         // check For permission
         if (!checkPermissionFor(Manifest.permission.ACCESS_FINE_LOCATION)) {
             // if permission not granted
-            Log.d(TAG, "startTrackingLocation: Permission not granted for fine location access");
+            Log.d(TAG, "getDeviceLocation: Permission not granted for fine location access");
             showPermissionDialog(Manifest.permission.ACCESS_FINE_LOCATION);
         } else {
             // if permission  granted
-            Log.d(TAG, "startTrackingLocation: requesting last known location");
-            viewModel.getUserLocation();
+            Log.d(TAG, "getDeviceLocation: requesting last known location");
+            viewModel.getDeviceLocation();
         }
 
     }
@@ -231,11 +253,10 @@ public class MainActivity extends SingleFragmentActivity implements
 
     /**
      * show alertdialog to user for required permissions
-     *
      */
 
-    private void showAlert(){
-        if (!isPermissionDialogVisible()){
+    private void showAlert() {
+        if (!isPermissionDialogVisible()) {
             //permission dialog is not displayed
             Log.d(TAG, "showAlert: permissions dialog is not visible ");
             final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -255,11 +276,11 @@ public class MainActivity extends SingleFragmentActivity implements
                     .setCancelable(false)
                     .create()
                     .show();
-        }else {
+        } else {
             Log.d(TAG, "showAlert: permissions dialog is visible");
-            return;
         }
     }
+
 
     /**
      * helper method to check if permissions dialog is visible
@@ -269,6 +290,38 @@ public class MainActivity extends SingleFragmentActivity implements
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
         return "com.android.packageinstaller.permission.ui.GrantPermissionsActivity".equals(cn.getClassName());
+    }
+
+
+    /**
+     * called when location settings are not satisfied as per our requirements
+     * called as an callback method from viewmodel
+     * show user actions to change for meeting with our requirements
+     */
+
+    @Override
+    public void locationSettingResolutionRequired(Exception e) {
+     // extract the status code
+     int statusCode = ((ApiException)e).getStatusCode();
+
+     switch (statusCode){
+         case CommonStatusCodes.RESOLUTION_REQUIRED:
+             // location setting don't satisfy the requirements but is resolvable by user
+             try{
+                 //Display a user dialog to resolve the requirements
+                 ResolvableApiException exception = (ResolvableApiException) e;
+                 exception.startResolutionForResult(this,SETTINGS_PERMISSION_CODE);
+             } catch (IntentSender.SendIntentException e1) {
+                 e1.printStackTrace();
+                 Log.e(TAG, "locationSettingResolutionRequired: Location settings resolution failed ", e );
+             }
+             break;
+         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+             // location settings don't satisfy the requirements and cannot be resolved by user
+             // yet starting listing to location updates
+             break;
+     }
+
     }
 
 

@@ -1,7 +1,5 @@
 package com.example.bike_rental.homescreen;
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -10,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +17,12 @@ import com.example.bike_rental.models.Bike;
 import com.example.bike_rental.R;
 import com.example.bike_rental.databinding.FragmentHomeBinding;
 import com.example.bike_rental.databinding.ListItemBikeBinding;
+import com.example.bike_rental.models.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO migrate all the location code from mainactivity
 public class HomeFragment  extends Fragment {
 
     /**
@@ -30,6 +31,7 @@ public class HomeFragment  extends Fragment {
      */
     public static HomeFragment createInstance(){ return new HomeFragment(); }
 
+    private static final String TAG = "HomeFragment";
     private List<Bike> availableBikes = new ArrayList<>(); // available bikes
     private FragmentHomeBinding fragmentHomeBinding; // Binding for the layout inflated for the fragment
     private HomeFragmentViewModel viewModel; // view Model for this fragment
@@ -60,11 +62,23 @@ public class HomeFragment  extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
 
-
         viewModel.getAvailableBikes().observe(this, bikes -> {
             this.availableBikes = bikes;
             //TODO investigate if this is best practise or should I get a reference to adapter during first initialization
             fragmentHomeBinding.recyclerviewFragmentMain.getAdapter().notifyDataSetChanged();
+        });
+
+
+        fragmentHomeBinding.userPickupText.setOnClickListener(e->{
+            Log.d(TAG, "onViewCreated: userPickUpText clicked");
+
+        });
+
+        fragmentHomeBinding.fromCard.setOnClickListener(e->{
+            Log.d(TAG, "onViewCreated: ");
+        });
+        fragmentHomeBinding.tillCard.setOnClickListener(e->{
+            Log.d(TAG, "onViewCreated: ");
         });
 
         fragmentHomeBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
@@ -136,4 +150,6 @@ public class HomeFragment  extends Fragment {
             }
         }
     }
+
+
 }
