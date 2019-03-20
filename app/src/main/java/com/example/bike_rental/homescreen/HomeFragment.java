@@ -1,5 +1,8 @@
-package com.example.bike_rental;
+package com.example.bike_rental.homescreen;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,68 +14,74 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.bike_rental.databinding.FragmentMainBinding;
+import com.example.bike_rental.models.Bike;
+import com.example.bike_rental.R;
+import com.example.bike_rental.databinding.FragmentHomeBinding;
 import com.example.bike_rental.databinding.ListItemBikeBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainFragment extends Fragment {
+public class HomeFragment  extends Fragment {
 
     /**
-     * @availableBikes - bikes available at a particualr location
-     * @fragmentMainBinding - binding for this fragment
-     *
+     * static method to get a fragment of this class
+     * @return
      */
-    private List<Bike> availableBikes = new ArrayList<>();
-    private FragmentMainBinding fragmentMainBinding;
+    public static HomeFragment createInstance(){ return new HomeFragment(); }
 
-    // Static method to create a new instance of this fragment used by activity which contains this fragment
-    public static MainFragment getInstance(){
-        return new MainFragment();
-    }
+    private List<Bike> availableBikes = new ArrayList<>(); // available bikes
+    private FragmentHomeBinding fragmentHomeBinding; // Binding for the layout inflated for the fragment
+    private HomeFragmentViewModel viewModel; // view Model for this fragment
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        FragmentMainBinding binding = DataBindingUtil.inflate(
+
+        FragmentHomeBinding binding = DataBindingUtil.inflate(
                 inflater,
-                R.layout.fragment_main,
+                R.layout.fragment_home,
                 container,
                 false
         );
+
+        // get a reference to viewmodels  for the fragment
+        viewModel = ViewModelProviders.of(this).get(HomeFragmentViewModel.class);
+
+
         // get a reference to binding
-        this.fragmentMainBinding = binding;
+        this.fragmentHomeBinding = binding;
         return binding.getRoot();
     }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
 
-        //TODO get bike data from server
-        availableBikes.add(new Bike("Hero Honda","Splendor Plus","Avg Of 20kms/l","12/hr",""));
-        availableBikes.add(new Bike("Hero Honda","Splendor","Avg Of 20kms/l","12/hr",""));
-        availableBikes.add(new Bike("Honda","CBZ","Avg Of 20kms/l","12/hr",""));
-        availableBikes.add(new Bike("Hero","Activa 5g","Avg Of 20kms/l","12/hr",""));
-        availableBikes.add(new Bike("Hero","Activa 125","Avg Of 20kms/l","12/hr",""));
-        availableBikes.add(new Bike("Honda","trigger","Avg Of 20kms/l","12/hr",""));
-        availableBikes.add(new Bike("Honda","Plus","Avg Of 20kms/l","12/hr",""));
 
+        viewModel.getAvailableBikes().observe(this, bikes -> {
+            this.availableBikes = bikes;
+            //TODO investigate if this is best practise or should I get a reference to adapter during first initialization
+            fragmentHomeBinding.recyclerviewFragmentMain.getAdapter().notifyDataSetChanged();
+        });
 
-        //set adapter and layoutmanager to recyclerview
-        fragmentMainBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
-        fragmentMainBinding.recyclerviewFragmentMain.setLayoutManager(new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false));
+        fragmentHomeBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
+        fragmentHomeBinding.recyclerviewFragmentMain.setLayoutManager(
+                new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false)
+        );
+
     }
+
+
+    /**
+     * Recyclerview adapter for bikes available in region
+     */
 
     class BikeAdapter extends RecyclerView.Adapter<BikeAdapter.BikeHolder>{
 
         private static final String TAG = "BikeAdapter";
-
-
 
         public BikeAdapter() {
 
@@ -102,6 +111,9 @@ public class MainFragment extends Fragment {
 
 
 
+        /**
+         * Holder for bikes
+         */
         class BikeHolder extends RecyclerView.ViewHolder{
             // Binding of the List Item used by recycler view
             ListItemBikeBinding bikeBinding;
@@ -110,11 +122,7 @@ public class MainFragment extends Fragment {
                 super(bikeBinding.getRoot());
                 this.bikeBinding = bikeBinding;
                 //TODO impelement selection logic and highlight the selected accordingly
-                bikeBinding.parentLayoutListItemBike.setOnClickListener(e->{
-                    bikeBinding.parentLayoutListItemBike.setBackground(
-                            getActivity().getDrawable(R.drawable.forground_selection_style)
-                    );
-                });
+
             }
 
             /**

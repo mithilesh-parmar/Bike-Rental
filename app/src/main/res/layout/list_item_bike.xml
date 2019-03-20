@@ -5,7 +5,7 @@
     <data>
         <variable
             name="bike"
-            type="com.example.bike_rental.Bike"/>
+            type="com.example.bike_rental.models.Bike"/>
     </data>
 
 

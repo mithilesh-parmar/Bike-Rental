@@ -1,4 +1,4 @@
-package com.example.bike_rental;
+package com.example.bike_rental.models;
 
 import java.util.UUID;
 
