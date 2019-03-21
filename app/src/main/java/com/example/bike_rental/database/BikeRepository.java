@@ -3,16 +3,35 @@ package com.example.bike_rental.database;
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.os.AsyncTask;
+import android.util.Log;
 
 import com.example.bike_rental.models.Bike;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class BikeRepository {
 
-    enum PickupLocations{
+    private static final String TAG = "BikeRepository";
+
+    public enum City {
+        JAIPUR("Jaipur"),
+        JODHPUR("Jodhpur");
+
+        private String s;
+
+        City(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+    }
+
+    public enum PickupLocations{
 
         JECRC_UNIVERSITY("Jecrc University") ,
         POORNIMA_COLLEGE("Poornima College") ,
@@ -35,6 +54,8 @@ public class BikeRepository {
      */
 
     private MutableLiveData<List<Bike>> availableBikes;
+    private MutableLiveData<List<String>> pickupCities; // cities where service is currently available
+    private MutableLiveData<List<String>> pickupLocations; // pickuplocations for each city
 
     public BikeRepository(Application application) {
         //TODO create a room database
@@ -43,6 +64,8 @@ public class BikeRepository {
          * get user location save it as user pref and show initial data acoordingly
          */
         availableBikes = new MutableLiveData<>();
+        pickupCities = new MutableLiveData<>();
+        pickupLocations = new MutableLiveData<>();
     }
 
     public LiveData<List<Bike>> getAvailableBikes() {
@@ -63,6 +86,28 @@ public class BikeRepository {
         return  null;
     }
 
+    public MutableLiveData<List<String>> getPickupCities() {
+        List<String> cities = new ArrayList<>();
+        for (City c :City.values()) {
+            cities.add(c.toString());
+        }
+        pickupCities.setValue(cities);
+        return pickupCities;
+    }
+
+    public MutableLiveData<List<String>> getPickupLocationsForCity(City city) {
+        // search for pickuplocations on server
+        return pickupLocations;
+    }
+
+    public MutableLiveData<List<String>> getPickupLocations() {
+        List<String> list = new ArrayList<>();
+        for (PickupLocations l : PickupLocations.values()) {
+            list.add(l.toString());
+        }
+        pickupLocations.setValue(list);
+        return pickupLocations;
+    }
 
     /*
     TODO perform some tasks

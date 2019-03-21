@@ -22,8 +22,17 @@
             android:elevation="0dp"
             android:background="@color/whiteBackground"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-            app:title="Pickup location"
             >
+
+            <TextView
+                android:id="@+id/title_toolbar_pickup_location_activity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pickup Location"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:drawableLeft="@drawable/ic_location"
+                android:drawablePadding="4dp"
+                />
 
         </android.support.v7.widget.Toolbar>
 

@@ -8,9 +8,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -45,11 +48,10 @@ public class MainActivity extends SingleFragmentActivity implements
     private static final String TAG = "MainActivity";
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private Button rentalToolbarButton,ridesTooblarButton;
+    private Button rentalToolbarButton,ridesTooblarButton;// toolbar buttons for changing fragments
     private static final int REQUEST_LOCATION_PERMISSION_CODE = 2316;
     private static final int SETTINGS_PERMISSION_CODE = 216;
     private MainActivityViewModel viewModel;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,8 +100,6 @@ public class MainActivity extends SingleFragmentActivity implements
         getDeviceLocation();
 
     }
-
-
 
     /**
      * used to get the fragment that should be inflated in this activity

@@ -25,3 +25,7 @@ Rides Activity
 - show map fragment with current pickup location
 - request nearby drivers
 - Think of more implementations
+
+
+
+// TODO show calendar view for pickup and dropoff date

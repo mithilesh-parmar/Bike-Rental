@@ -2,8 +2,10 @@ package com.example.bike_rental.homescreen;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -40,7 +42,16 @@ public class HomeFragment  extends Fragment {
     private List<Bike> availableBikes = new ArrayList<>(); // available bikes
     private FragmentHomeBinding fragmentHomeBinding; // Binding for the layout inflated for the fragment
     private HomeFragmentViewModel viewModel; // view Model for this fragment
-    private final static int PICKUP_LOCATION_REQUESTCODE = 2314;
+    private final static int PICKUP_LOCATION_REQUESTCODE = 2314; // requestcode
+    private SharedPreferences.Editor editor; // editor instance for saving to prefd
+    private static final String KEY_PICKUP_LOCATION_NAME = "Pickup location name "; // key for pref
+    private String pickupLocation  = "Select pickup location";
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        editor = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).edit();
+    }
 
     @Nullable
     @Override
@@ -67,43 +78,87 @@ public class HomeFragment  extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
 
-        viewModel.getAvailableBikes().observe(this, bikes -> {
-            this.availableBikes = bikes;
-            //TODO investigate if this is best practise or should I get a reference to adapter during first initialization
-            fragmentHomeBinding.recyclerviewFragmentMain.getAdapter().notifyDataSetChanged();
-        });
+        // if its a configuration change then extract the data
+        if (savedInstanceState != null && savedInstanceState.containsKey(KEY_PICKUP_LOCATION_NAME)){
+            pickupLocation = savedInstanceState.getString(KEY_PICKUP_LOCATION_NAME); // get the pickup location
+        }
 
+        if (!viewModel.getAvailableBikes().hasObservers()){
+            // has no observers
+            //TODO change the implementation to get avaialble bikes for a particular location
+            viewModel.getAvailableBikes().observe(this, bikes -> {
+                // request available bikes for selected pickup location
+                this.availableBikes = bikes;
+                //TODO investigate if this is best practise or should I get a reference to adapter during first initialization
+                fragmentHomeBinding.recyclerviewFragmentMain.getAdapter().notifyDataSetChanged(); // notify the adapter
+            });
+        }
 
+        // open the pickupactivity on click
         fragmentHomeBinding.userPickupText.setOnClickListener(e->{
             Log.d(TAG, "onViewCreated: userPickUpText clicked");
             Intent intent =new Intent(getActivity(),PickupLocationActivity.class);
             startActivityForResult(intent,PICKUP_LOCATION_REQUESTCODE);
         });
 
+        //TODO show calendar view
         fragmentHomeBinding.fromCard.setOnClickListener(e->{
             Log.d(TAG, "onViewCreated: ");
         });
+
         fragmentHomeBinding.tillCard.setOnClickListener(e->{
             Log.d(TAG, "onViewCreated: ");
         });
 
+        // setup recycler view
         fragmentHomeBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
         fragmentHomeBinding.recyclerviewFragmentMain.setLayoutManager(
                 new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false)
         );
 
 
+        fragmentHomeBinding.userPickupText.setText(pickupLocation); // set it to textview
+
     }
 
+    /**
+     * called after the user selects the pickup location from PickupLocation activity
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
             case PICKUP_LOCATION_REQUESTCODE:
                 if (resultCode == RESULT_OK){
-                    fragmentHomeBinding.userPickupText.setText(data.getStringExtra(PickupLocationActivity.EXTRA_SELECTED_LOCATION));
+                    // get the piockuplocation passed by the activity
+                    pickupLocation = data.getStringExtra(PickupLocationActivity.EXTRA_SELECTED_LOCATION);
+                    fragmentHomeBinding.userPickupText.setText(pickupLocation); // set the text
+                    savePref(pickupLocation); // save to shared pref
                 }
         }
+    }
+
+
+    /**
+     * used to save pickuplocation to sharedpref
+     * @param pickupLocation
+     */
+    private void savePref(String pickupLocation){
+        editor.putString(KEY_PICKUP_LOCATION_NAME,pickupLocation);
+        editor.apply();
+    }
+
+    /**
+     * lifecycle call
+     * @param outState
+     */
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(KEY_PICKUP_LOCATION_NAME,pickupLocation);
+        super.onSaveInstanceState(outState);
     }
 
     /**
