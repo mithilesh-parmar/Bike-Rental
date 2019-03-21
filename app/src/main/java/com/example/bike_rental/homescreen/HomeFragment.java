@@ -1,6 +1,7 @@
 package com.example.bike_rental.homescreen;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,17 +13,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.bike_rental.models.Bike;
 import com.example.bike_rental.R;
 import com.example.bike_rental.databinding.FragmentHomeBinding;
 import com.example.bike_rental.databinding.ListItemBikeBinding;
 import com.example.bike_rental.models.User;
+import com.example.bike_rental.pickuplocationscreen.PickupLocationActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO migrate all the location code from mainactivity
+import static android.app.Activity.RESULT_OK;
+
+//TODO migrate all the location code from mainactivity and add a geocoder to get city of the user
 public class HomeFragment  extends Fragment {
 
     /**
@@ -35,7 +40,7 @@ public class HomeFragment  extends Fragment {
     private List<Bike> availableBikes = new ArrayList<>(); // available bikes
     private FragmentHomeBinding fragmentHomeBinding; // Binding for the layout inflated for the fragment
     private HomeFragmentViewModel viewModel; // view Model for this fragment
-
+    private final static int PICKUP_LOCATION_REQUESTCODE = 2314;
 
     @Nullable
     @Override
@@ -71,7 +76,8 @@ public class HomeFragment  extends Fragment {
 
         fragmentHomeBinding.userPickupText.setOnClickListener(e->{
             Log.d(TAG, "onViewCreated: userPickUpText clicked");
-
+            Intent intent =new Intent(getActivity(),PickupLocationActivity.class);
+            startActivityForResult(intent,PICKUP_LOCATION_REQUESTCODE);
         });
 
         fragmentHomeBinding.fromCard.setOnClickListener(e->{
@@ -86,8 +92,19 @@ public class HomeFragment  extends Fragment {
                 new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false)
         );
 
+
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case PICKUP_LOCATION_REQUESTCODE:
+                if (resultCode == RESULT_OK){
+                    fragmentHomeBinding.userPickupText.setText(data.getStringExtra(PickupLocationActivity.EXTRA_SELECTED_LOCATION));
+                }
+        }
+    }
 
     /**
      * Recyclerview adapter for bikes available in region

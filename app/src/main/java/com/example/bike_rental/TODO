@@ -1,0 +1,27 @@
+App Flow
+
+ - user selects the location for pickup
+ - save this location for future references
+ - data is loaded in our fleet recyclerview (not selectable yet until user specify's time slot  )
+ - user selects the available bike and is headed to payments page
+
+Pickup Location Activity
+
+- load all the cities available
+- on city selection load pickup points for that city
+- implement search feature
+- implement header for cities
+
+HomeFragment
+- calendar view for pickup and dropoff time and date
+- toolbar selection of button changes fragments in main container
+- implement navigation selection from navigation drawer
+
+App Intro
+- ask for all permissions
+- get user location
+
+Rides Activity
+- show map fragment with current pickup location
+- request nearby drivers
+- Think of more implementations
