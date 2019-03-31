@@ -43,7 +43,9 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 //TODO on configuration changes location permission is showed again from start
 public class MainActivity extends SingleFragmentActivity implements
-        NavigationView.OnNavigationItemSelectedListener , View.OnClickListener, MainActivityViewModel.Callback {
+        NavigationView.OnNavigationItemSelectedListener ,
+        View.OnClickListener,
+        MainActivityViewModel.Callback {
 
     private static final String TAG = "MainActivity";
     private DrawerLayout drawerLayout;

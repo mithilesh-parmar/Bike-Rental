@@ -9,28 +9,39 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.TextView;
 
+import com.example.bike_rental.utils.DatePickerFragment;
 import com.example.bike_rental.models.Bike;
 import com.example.bike_rental.R;
 import com.example.bike_rental.databinding.FragmentHomeBinding;
 import com.example.bike_rental.databinding.ListItemBikeBinding;
-import com.example.bike_rental.models.User;
 import com.example.bike_rental.pickuplocationscreen.PickupLocationActivity;
+import com.example.bike_rental.utils.Pickerlayoutmanager;
+import com.example.bike_rental.utils.BookingTime;
+import com.example.bike_rental.utils.TimePickerFragment;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 
 //TODO migrate all the location code from mainactivity and add a geocoder to get city of the user
-public class HomeFragment  extends Fragment {
+public class HomeFragment  extends Fragment  {
 
     /**
      * static method to get a fragment of this class
@@ -46,10 +57,18 @@ public class HomeFragment  extends Fragment {
     private SharedPreferences.Editor editor; // editor instance for saving to prefd
     private static final String KEY_PICKUP_LOCATION_NAME = "Pickup location name "; // key for pref
     private String pickupLocation  = "Select pickup location";
+    private BookingTime pickup, dropOff;
+    private  DatePickerFragment fromDatePicker,tillDatePicker;
+    private static final int FROM_DATE_REQUEST_CODE = 941;
+    private static final int FROM_TIME_REQUEST_CODE = 142;
+    private static final int TILL_DATE_REQUEST_CODE = 435;
+    private static final int TILL_TIME_REQUEST_CODE = 441;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        setRetainInstance(true);
         editor = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).edit();
     }
 
@@ -83,6 +102,9 @@ public class HomeFragment  extends Fragment {
             pickupLocation = savedInstanceState.getString(KEY_PICKUP_LOCATION_NAME); // get the pickup location
         }
 
+        pickup = new BookingTime();
+        dropOff = new BookingTime();
+
         if (!viewModel.getAvailableBikes().hasObservers()){
             // has no observers
             //TODO change the implementation to get avaialble bikes for a particular location
@@ -103,18 +125,34 @@ public class HomeFragment  extends Fragment {
 
         //TODO show calendar view
         fragmentHomeBinding.fromCard.setOnClickListener(e->{
-            Log.d(TAG, "onViewCreated: ");
+            fromDatePicker= DatePickerFragment.getInstance(-1,-1,"From");
+            fromDatePicker.setTargetFragment(this,FROM_DATE_REQUEST_CODE);
+            fromDatePicker.show(getFragmentManager(),"DatePickerFragment");
         });
 
         fragmentHomeBinding.tillCard.setOnClickListener(e->{
-            Log.d(TAG, "onViewCreated: ");
+            tillDatePicker = DatePickerFragment.getInstance(-1,-1,"Till");
+            tillDatePicker.setTargetFragment(this,TILL_DATE_REQUEST_CODE);
+            tillDatePicker.show(getFragmentManager(),"DatePickerFragment");
         });
 
         // setup recycler view
         fragmentHomeBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
+
+
+        Pickerlayoutmanager pickerLayoutManager = new Pickerlayoutmanager(getActivity(), Pickerlayoutmanager.HORIZONTAL, false);
+        pickerLayoutManager.setChangeAlpha(true);
+        pickerLayoutManager.setScaleDownBy(0.4f);
+        pickerLayoutManager.setScaleDownDistance(1.0f);
+
+
+        SnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(fragmentHomeBinding.recyclerviewFragmentMain);
+
         fragmentHomeBinding.recyclerviewFragmentMain.setLayoutManager(
-                new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false)
+                pickerLayoutManager
         );
+
 
 
         fragmentHomeBinding.userPickupText.setText(pickupLocation); // set it to textview
@@ -130,17 +168,84 @@ public class HomeFragment  extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) return;
         switch (requestCode){
             case PICKUP_LOCATION_REQUESTCODE:
-                if (resultCode == RESULT_OK){
                     // get the piockuplocation passed by the activity
-                    pickupLocation = data.getStringExtra(PickupLocationActivity.EXTRA_SELECTED_LOCATION);
-                    fragmentHomeBinding.userPickupText.setText(pickupLocation); // set the text
-                    savePref(pickupLocation); // save to shared pref
-                }
+                pickupLocation = data.getStringExtra(PickupLocationActivity.EXTRA_SELECTED_LOCATION);
+                fragmentHomeBinding.userPickupText.setText(pickupLocation); // set the text
+                savePref(pickupLocation); // save to shared pref
+                break;
+            case FROM_DATE_REQUEST_CODE:
+                setDateFor(pickup,data,fragmentHomeBinding.fromDate);
+                showTimePickerDialog("From",FROM_TIME_REQUEST_CODE);
+                break;
+            case TILL_DATE_REQUEST_CODE:
+                setDateFor(dropOff,data,fragmentHomeBinding.tillDate);
+                showTimePickerDialog("Till",TILL_TIME_REQUEST_CODE);
+                break;
+            case FROM_TIME_REQUEST_CODE:
+                setTimeFor(pickup,data,fragmentHomeBinding.fromTime);
+                break;
+            case TILL_TIME_REQUEST_CODE:
+                setTimeFor(dropOff,data,fragmentHomeBinding.tillTime);
+                break;
         }
     }
 
+    private void setDateFor(BookingTime booking, Intent data , TextView view){
+        int dayOfMonth = data.getIntExtra(DatePickerFragment.EXTRA_DAY_OF_MONTH,-1);
+        int month = data.getIntExtra(DatePickerFragment.EXTRA_MONTH,-1);
+        booking.setDayOfMonth(dayOfMonth);
+        booking.setMonth(month);
+        updateDate(view,getMonthName(month) + ", " +String.valueOf(dayOfMonth));
+    }
+
+    private void setTimeFor(BookingTime booking , Intent data, TextView view){
+        int hourOfDay = data.getIntExtra(TimePickerFragment.EXTRA_HOUR_OF_DAY,-1);
+        int minute = data.getIntExtra(TimePickerFragment.EXTRA_MINUTE,-1);
+        booking.setHourOfDay(hourOfDay);
+        booking.setMinute(minute);
+        updateTime(view, getFormattedTime(hourOfDay,minute));
+    }
+
+    private void updateTime(TextView view, String time){
+        view.setText(time);
+    }
+
+    private void updateDate(TextView view,String date){
+        view.setText(date);
+    }
+
+    private String getMonthName(int month){
+        switch (month){
+            case 1 : return "Jan";
+            case 2 : return "Feb";
+            case 3 : return "Mar";
+            case 4 : return "Apr";
+            case 5 : return "May";
+            case 6 : return "Jun";
+            case 7 : return "Jul";
+            case 8 : return "Aug";
+            case 9 : return "Sep";
+            case 10 : return "Oct";
+            case 11 : return "Nov";
+            case 12 : return "Dec";
+        }
+        return "";
+    }
+
+    //TODO setup time and date formatter
+
+    private String getFormattedTime(int hourOfDay, int minute){
+        return ";";
+    }
+
+    private void showTimePickerDialog(String title,int requestCode){
+        TimePickerFragment fragment = TimePickerFragment.getInstance(title);
+        fragment.setTargetFragment(this,requestCode);
+        fragment.show(getFragmentManager(),TimePickerFragment.TAG);
+    }
 
     /**
      * used to save pickuplocation to sharedpref
