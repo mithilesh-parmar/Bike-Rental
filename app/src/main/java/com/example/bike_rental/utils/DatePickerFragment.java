@@ -47,7 +47,6 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
     }
 
     @NonNull

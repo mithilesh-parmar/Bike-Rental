@@ -13,8 +13,6 @@ Pickup Location Activity
 - implement header for cities
 
 HomeFragment
-- calendar view for pickup and dropoff time and date
-- toolbar selection of button changes fragments in main container
 - implement navigation selection from navigation drawer
 
 App Intro
@@ -28,4 +26,4 @@ Rides Activity
 
 
 
-// TODO show calendar view for pickup and dropoff date
+// TODO hide the minutes layout in timepickerfragment
