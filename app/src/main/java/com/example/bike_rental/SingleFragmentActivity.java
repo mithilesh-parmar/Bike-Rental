@@ -32,8 +32,13 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
             fragment = createFragment();
             fragmentManager.beginTransaction()
                     .add(R.id.main_container,fragment)
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .commit();
         }
     }
+
+    public FragmentManager getParentFragmentManager(){
+        return fragmentManager;
+    }
+
 }

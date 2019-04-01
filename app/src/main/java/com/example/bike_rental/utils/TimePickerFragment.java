@@ -21,6 +21,11 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
     public static final String EXTRA_MINUTE =TAG + ".EXTRA_MINUTE";
 
 
+    /**
+     *
+     * @param title title for dialog
+     * @return
+     */
     public static TimePickerFragment getInstance(String title) {
         Bundle args = new Bundle();
         args.putString(KEY_TITLE,title);
@@ -43,10 +48,12 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
         Bundle args = getArguments();
         String title="";
 
+        // if arguments are provided  then get the title values
         if (args != null){
             title =  args.getString(KEY_TITLE);
         }
 
+        // setup the calendar instance
         Calendar calendar = Calendar.getInstance();
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
@@ -58,6 +65,12 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
         return dialog;
     }
 
+    /**
+     * on time set send the result to calling fragment
+     * @param view
+     * @param hourOfDay
+     * @param minute
+     */
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         if (view.isShown() ) {
@@ -67,6 +80,12 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
 
     }
 
+    /**
+     * send the selected time to calling fragment
+     * @param resultCode
+     * @param hourOfDay
+     * @param minute
+     */
     private void sendResult(int resultCode,int hourOfDay, int minute){
         if (getTargetFragment() == null)return;
 

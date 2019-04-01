@@ -27,6 +27,13 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     public static final String EXTRA_DAY_OF_MONTH = TAG + "EXTRA_DAY_OF_MONTH";
 
 
+    /**
+     * create the instance of this fragment
+     * @param minAllowedDate min date that can be selected
+     * @param maxAllowedDate max date that can be selected
+     * @param title title for dialog
+     * @return
+     */
     public static DatePickerFragment getInstance(int minAllowedDate, int maxAllowedDate,String title){
         Bundle bundle = new Bundle();
         bundle.putInt(KEY_MIN_DATE_ALLOWED,minAllowedDate);
@@ -49,24 +56,29 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
         Bundle bundle = getArguments();
 
-        int minAllowedDate = -1;
-        int maxAllowedDate = -1;
+        int minAllowedDate = -1; // default value
+        int maxAllowedDate = -1; // default value
 
 
+        // get the values from bundle if it was a configuration change
         if (bundle != null){
             Log.d(TAG, "onViewCreated: "+maxAllowedDate);
             maxAllowedDate = bundle.getInt(KEY_MAX_DATE_ALLOWED);
             minAllowedDate = bundle.getInt(KEY_MIN_DATE_ALLOWED);
         }
 
+        // setup the calendar instance with year , month , day
         final Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
+
         DatePickerDialog dpd  = new DatePickerDialog(getActivity(), this, year, month, day);
 
+
         if (maxAllowedDate != -1 && minAllowedDate != -1){
+//             if max allowed date and min allowed date are provided
             Log.d(TAG, "onCreateDialog: "+maxAllowedDate);
             calendar.add(Calendar.DATE, maxAllowedDate);
             dpd.getDatePicker().setMaxDate(calendar.getTimeInMillis());
@@ -78,6 +90,14 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         return dpd;
     }
 
+
+    /**
+     * on date changed
+     * @param view
+     * @param year
+     * @param month
+     * @param dayOfMonth
+     */
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         if (view.isShown()){
@@ -86,6 +106,13 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         }
     }
 
+    /**
+     * send selected date to calling fragment using intent
+     * @param resultCode
+     * @param year
+     * @param month
+     * @param dayOfMonth
+     */
     private void sendResult(int resultCode,int year, int month, int dayOfMonth){
 
         if (getTargetFragment() == null)return;

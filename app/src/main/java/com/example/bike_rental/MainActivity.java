@@ -21,6 +21,7 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -35,6 +36,7 @@ import android.widget.Toast;
 
 import com.example.bike_rental.homescreen.HomeFragment;
 import com.example.bike_rental.models.User;
+import com.example.bike_rental.rentalScreen.RentalsFragment;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -151,11 +153,21 @@ public class MainActivity extends SingleFragmentActivity implements
      */
     @Override
     public void onClick(View v) {
-        //TODO switch fragments accoridingly in main_container
-        if (v==ridesTooblarButton) Toast.makeText(this, "Rides", Toast.LENGTH_SHORT).show();
-        else Toast.makeText(this, "Rentals", Toast.LENGTH_SHORT).show();
+        if (v==ridesTooblarButton) changeFragment(HomeFragment.createInstance());
+        else changeFragment(RentalsFragment.createInstance());
     }
 
+
+    /**
+     * change the fragment in main container on toolbar button click
+     * @param fragment
+     */
+    private void changeFragment(Fragment fragment){
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.main_container,fragment)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .commit();
+    }
 
     /**
      * TODO imnplementations required in this method

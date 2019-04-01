@@ -68,7 +68,7 @@ public class HomeFragment  extends Fragment  {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setRetainInstance(true);
+        setRetainInstance(true);
         editor = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).edit();
     }
 
@@ -157,6 +157,7 @@ public class HomeFragment  extends Fragment  {
 
         fragmentHomeBinding.userPickupText.setText(pickupLocation); // set it to textview
 
+
     }
 
     /**
@@ -171,7 +172,7 @@ public class HomeFragment  extends Fragment  {
         if (resultCode != RESULT_OK) return;
         switch (requestCode){
             case PICKUP_LOCATION_REQUESTCODE:
-                    // get the piockuplocation passed by the activity
+                    // get the pickuplocation passed by the activity
                 pickupLocation = data.getStringExtra(PickupLocationActivity.EXTRA_SELECTED_LOCATION);
                 fragmentHomeBinding.userPickupText.setText(pickupLocation); // set the text
                 savePref(pickupLocation); // save to shared pref

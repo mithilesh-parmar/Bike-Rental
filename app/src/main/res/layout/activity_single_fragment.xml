@@ -35,16 +35,6 @@
                >
 
                <Button
-                   android:id="@+id/rental_toolbar_button"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:text="Rental"
-                   android:textColor="@color/toolbar_button_color"
-                   android:layout_margin="4dp"
-                   android:background="@drawable/toolbar_button_style"
-                   />
-
-               <Button
                    android:id="@+id/rides_toolbar_button"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
@@ -54,6 +44,15 @@
                    android:background="@drawable/toolbar_button_style"
                    />
 
+               <Button
+                   android:id="@+id/rental_toolbar_button"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Rental"
+                   android:textColor="@color/toolbar_button_color"
+                   android:layout_margin="4dp"
+                   android:background="@drawable/toolbar_button_style"
+                   />
 
            </android.support.v7.widget.Toolbar>
 
