@@ -27,3 +27,4 @@ Rides Activity
 
 
 // TODO hide the minutes layout in timepickerfragment
+// TODO set the left initial padding for recyclerview to center the view initially

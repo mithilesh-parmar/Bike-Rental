@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
@@ -19,20 +20,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.bike_rental.utils.CenterItemDecoration;
 import com.example.bike_rental.utils.DatePickerFragment;
 import com.example.bike_rental.models.Bike;
 import com.example.bike_rental.R;
 import com.example.bike_rental.databinding.FragmentHomeBinding;
 import com.example.bike_rental.databinding.ListItemBikeBinding;
 import com.example.bike_rental.pickuplocationscreen.PickupLocationActivity;
-import com.example.bike_rental.utils.Pickerlayoutmanager;
 import com.example.bike_rental.utils.BookingTime;
 import com.example.bike_rental.utils.TimePickerFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
@@ -173,24 +173,20 @@ public class HomeFragment  extends Fragment  {
                 showDatePickerDialog("Till", REQUEST_CODE_TILL_DATE,-1,-1);
             });
 
+
+
             // setup recycler view
             fragmentHomeBinding.recyclerviewFragmentMain.setAdapter(new BikeAdapter());
-
-
-            // TODO adjust the layoutmanager to scale down all the elements except the first one
-            Pickerlayoutmanager pickerLayoutManager = new Pickerlayoutmanager(getActivity(), Pickerlayoutmanager.HORIZONTAL, false);
-            pickerLayoutManager.setChangeAlpha(true);
-            pickerLayoutManager.setScaleDownBy(0.4f);
-            pickerLayoutManager.setScaleDownDistance(1.0f);
+            // set the item decoration to center the views
+            fragmentHomeBinding.recyclerviewFragmentMain.addItemDecoration(new CenterItemDecoration());
 
 
             SnapHelper snapHelper = new LinearSnapHelper();
             snapHelper.attachToRecyclerView(fragmentHomeBinding.recyclerviewFragmentMain);
 
             fragmentHomeBinding.recyclerviewFragmentMain.setLayoutManager(
-                    pickerLayoutManager
+                   new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false)
             );
-
 
 
             fragmentHomeBinding.userPickupText.setText(pickupLocation); // set it to textview
